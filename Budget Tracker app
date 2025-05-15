@@ -15,7 +15,7 @@ def save_data():
         json.dump(st.session_state.data, f)
 
 # UI
-st.title("Budget Tracker")
+st.title("Notion-Style Budget Tracker")
 
 # Period selector
 period = st.radio("View:", ["Weekly", "Monthly"], horizontal=True)
@@ -45,9 +45,9 @@ with st.form("expense_form"):
 # Balance
 expenses = sum(float(e["amount"]) for e in st.session_state.data[current_period]["expenses"])
 remaining = budget - expenses
-st.subheader(f"Remaining: **€{remaining:.2f}**")
+st.subheader(f"Remaining: **${remaining:.2f}**")
 
 # Expense history
 st.subheader("Expense History")
 for expense in st.session_state.data[current_period]["expenses"]:
-    st.write(f"**€{expense['amount']}** - {expense['description']} ({expense['date']})")
+    st.write(f"**${expense['amount']}** - {expense['description']} ({expense['date']})")
