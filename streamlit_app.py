@@ -1,6 +1,53 @@
 import streamlit as st
+import json
+from datetime import datetime
 
-st.title("🎈 My new app")
-st.write(
-    "Let's start building! For help and inspiration, head over to [docs.streamlit.io](https://docs.streamlit.io/)."
+# Initialize session state
+if 'data' not in st.session_state:
+    st.session_state.data = {
+        "weekly": {"budget": 0, "expenses": []},
+        "monthly": {"budget": 0, "expenses": []}
+    }
+
+# Load/save functions (simplified for Streamlit)
+def save_data():
+    with open("budget_data.json", "w") as f:
+        json.dump(st.session_state.data, f)
+
+# UI
+st.title("Budget Tracker")
+
+# Period selector
+period = st.radio("View:", ["Weekly", "Monthly"], horizontal=True)
+current_period = period.lower()
+
+# Budget input
+budget = st.number_input(
+    "Total Budget:",
+    value=st.session_state.data[current_period]["budget"],
+    key=f"budget_{current_period}"
 )
+st.session_state.data[current_period]["budget"] = budget
+
+# Expense input
+with st.form("expense_form"):
+    amount = st.number_input("Amount:", min_value=0.0, step=0.01)
+    description = st.text_input("Description:")
+    submitted = st.form_submit_button("Add Expense")
+    if submitted:
+        st.session_state.data[current_period]["expenses"].append({
+            "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "amount": amount,
+            "description": description
+        })
+        save_data()
+
+# Balance
+expenses = sum(float(e["amount"]) for e in st.session_state.data[current_period]["expenses"])
+remaining = budget - expenses
+st.subheader(f"Remaining: **${remaining:.2f}**")
+
+# Expense history
+st.subheader("Expense History")
+for expense in st.session_state.data[current_period]["expenses"]:
+    st.write(f"**${expense['amount']}** - {expense['description']} ({expense['date']})")
